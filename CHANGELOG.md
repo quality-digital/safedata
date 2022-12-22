@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+- prevent anonymous user from altering existing document with a single-valued index.
+
 ## [1.0.1] - 2022-09-15
 ### Fixed
 - README path information adjustment

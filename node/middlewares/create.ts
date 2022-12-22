@@ -11,6 +11,7 @@ export async function create(ctx: Context, next: () => Promise<unknown>) {
   } = ctx
 
   if (!isLoggedIn) {
+
     if (entitySettings.canCreate) {
       if (_orderFormId && document.email) {
         if (
@@ -58,7 +59,7 @@ export async function create(ctx: Context, next: () => Promise<unknown>) {
     return
   }
 
-  const documentResult = await createOrUpdateDocument(ctx, dataEntity, document)
+  const documentResult = await createOrUpdateDocument(ctx, dataEntity, document, isLoggedIn)
 
   // transforms documentResult to camelCase since the MasterData API returns all data in PascalCase
   ctx.body = transformObjKeys({ ...document, ...documentResult }, camelCase)
@@ -77,19 +78,32 @@ export async function create(ctx: Context, next: () => Promise<unknown>) {
 async function createOrUpdateDocument(
   ctx: Context,
   dataEntity: string,
-  document: MasterDataEntity
+  document: MasterDataEntity,
+  isLoggedIn:boolean,
 ) {
   try {
+    // to prevent logged-in users from altering a document when a single-valued index exists.
+    if (!isLoggedIn) {
+      return await ctx.clients.masterdata.createDocument({
+        dataEntity,
+        fields: document,
+        schema: ctx.query._schema,
+      })
+    }
+    else{
     return await ctx.clients.masterdata.createOrUpdatePartialDocument({
       dataEntity,
       fields: document,
       schema: ctx.query._schema,
     })
-  } catch (error) {
+  }} catch (error) {
     // masterdata returns 304 when the document already exists and is not modified as a result of the operation
-    if (error.response.status !== StatusCodes.NOT_MODIFIED) {
+    if (error.response.status !== StatusCodes.NOT_MODIFIED && isLoggedIn) {
       ctx.vtex.logger.error(error)
       throw error
+    }
+    else if (!isLoggedIn) {
+      throw error.response.data
     }
 
     return null
