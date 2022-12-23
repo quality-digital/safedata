@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Fixed
+- canCreate for anonymous user of the settings at CL and AD entities
+
+## [1.1.0] - 2022-12-23
+### Fixed
 - prevent anonymous user from altering existing document with a single-valued index.
 
 ## [1.0.1] - 2022-09-15

@@ -3,16 +3,35 @@ import transformObjKeys from 'transform-obj-keys'
 
 import { StatusCodes } from '../utils/httpUtils'
 import { setContextResult } from '../utils/setContextResult'
+import SettingsCache, {
+  DEFAULT_SETTINGS_CACHE_MAX_AGE_IN_MS,
+} from '../utils/settingsCache'
 
 export async function create(ctx: Context, next: () => Promise<unknown>) {
   const {
     state: { entity: dataEntity, entitySettings, isLoggedIn, document },
     query: { _orderFormId },
+    clients: { apps },
   } = ctx
+
+  const cacheKey = `${ctx.vtex.account}-${ctx.vtex.workspace}-${process.env.VTEX_APP_ID}`
+
+  const appSettings = (await SettingsCache.getOrSet(cacheKey, () =>
+  apps.getAppSettings(process.env.VTEX_APP_ID as string).then((res) => {
+    return {
+      value: res,
+      maxAge: DEFAULT_SETTINGS_CACHE_MAX_AGE_IN_MS,
+    }
+  })
+)) as Settings
+
+
+ const canCreateSetting = appSettings.entityConfigurations.find( elem => elem?.entityAcronym == dataEntity)?.canCreate ?? entitySettings.canCreate
+
 
   if (!isLoggedIn) {
 
-    if (entitySettings.canCreate) {
+    if (canCreateSetting) {
       if (_orderFormId && document.email) {
         if (
           await hasInvalidOrderFormData({
