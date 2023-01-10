@@ -1,7 +1,7 @@
 {
   "name": "safedata",
   "vendor": "vtex",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "title": "Safedata",
   "description": "An authorization middleware to work with sensitive data on MasterData.",
   "mustUpdateAt": "2018-01-04",

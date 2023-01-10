@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-01-10
+
 ### Fixed
 - canCreate for anonymous user of the settings at CL and AD entities
 
