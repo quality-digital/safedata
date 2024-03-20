@@ -1,0 +1,40 @@
+
+name: Revisão de Pull Request
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  messageSlack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Get repository name
+        id: repo_name
+        run: echo "::set-output name=name::${{ github.repository }}"
+
+      - name: Get pull request details
+        id: pr_details
+        run: echo "::set-output name=details::${{ toJson(github.event.pull_request) }}"
+
+      - name: Notification Slack
+        uses: rtCamp/action-slack-notify@v2.2.0
+        env:
+          SLACK_CHANNEL: securityreview-alarms
+          SLACK_USERNAME: BotCI
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_MESSAGE: |
+            Temos um novo PR para ser revisado no repositório ${{ steps.repo_name.outputs.name }}.
+            Pull Request: ${{ steps.pr_details.outputs.details.html_url }}
+            Autor: ${{ github.event.pull_request.user.login }}
+            Título: ${{ github.event.pull_request.title }}
+            Descrição: ${{ github.event.pull_request.body }}
+            
+            Faça a validação assim que possível.
